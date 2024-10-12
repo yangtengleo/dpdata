@@ -30,12 +30,12 @@ def _load_set(folder, nopbc: bool):
 
 def load_type(folder, spin_norm, virtual_len, type_map=None):
     data = {}
-      
     atom_types = np.loadtxt(os.path.join(folder, "type.raw"), ndmin=1).astype(int)
-    ntypes_spin = np.sum((spin_norm != -1) & (virtual_len != -1))
+    ntypes_spin = len(spin_norm)
     ntypes = np.max(atom_types) + 1 - ntypes_spin
-    assert len(spin_norm) == ntypes, f"The length of spin_norm should be equal to ntypes {ntypes}. If an element is not magnetic, set it to -1"
-    assert len(virtual_len) == ntypes, f"The length of virtual_len should be equal to ntypes {ntypes}. If an element is not magnetic, set it to -1"
+    assert len(spin_norm) == len(virtual_len), f"The length of spin_norm should be equal to virtual length."
+    assert len(spin_norm) <= ntypes, f"The length of spin_norm should be no more than ntypes {ntypes}."
+
     data["atom_types"] = atom_types[~np.isin(atom_types, np.arange(ntypes, ntypes + ntypes_spin))]
     
     data["atom_names"] = []
@@ -73,6 +73,8 @@ def to_system_data(folder, spin_norm, virtual_len, type_map=None, labels=True):
     all_mag_forces = []
     ntypes = np.max(data["atom_types"]) + 1
     natoms = data["atom_types"].shape[0]
+    spin_norm = np.concatenate((spin_norm, np.full(ntypes - spin_norm.shape, -1)))
+    virtual_len = np.concatenate((virtual_len, np.full(ntypes - virtual_len.shape, -1)))
     for ii in sets:
         cells, coords_spins = _load_set(ii, data.get("nopbc", False))
         nframes = np.reshape(cells, [-1, 3, 3]).shape[0]
@@ -228,8 +230,10 @@ def dump(folder, data, spin_norm, virtual_len, set_size=5000, comp_prec=np.float
 
     natoms = data["coords"].shape[1]
     ntypes = np.max(data["atom_types"]) + 1
-    assert len(spin_norm) == ntypes, f"The length of spin_norm should be equal to ntypes {ntypes}. If an element is not magnetic, set it to -1"
-    assert len(virtual_len) == ntypes, f"The length of virtual_len should be equal to ntypes {ntypes}. If an element is not magnetic, set it to -1"
+    assert len(spin_norm) == len(virtual_len), f"The length of spin_norm should be equal to virtual length."
+    assert len(spin_norm) <= ntypes, f"The length of spin_norm should be no more than ntypes {ntypes}."
+    spin_norm = np.concatenate((spin_norm, np.full(ntypes - spin_norm.shape, -1)))
+    virtual_len = np.concatenate((virtual_len, np.full(ntypes - virtual_len.shape, -1)))
 
     # Calculate the number of spins
     valid_spin_count = np.sum(data["atom_numbs"] * ((spin_norm != -1) & (virtual_len != -1)))
