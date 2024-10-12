@@ -10,6 +10,7 @@ import dpdata.deepmd.comp
 import dpdata.deepmd.hdf5
 import dpdata.deepmd.mixed
 import dpdata.deepmd.raw
+import dpdata.deepmd.dpspin_tf_comp
 from dpdata.driver import Driver
 from dpdata.format import Format
 
@@ -71,6 +72,25 @@ class DeePMDCompFormat(Format):
     def from_labeled_system(self, file_name, type_map=None, **kwargs):
         return dpdata.deepmd.comp.to_system_data(
             file_name, type_map=type_map, labels=True
+        )
+
+    MultiMode = Format.MultiModes.Directory
+
+
+@Format.register("dpspin_tf/npy")
+class DeePMDCompFormat(Format):
+    def from_system(self, file_name, type_map=None, **kwargs):
+        return dpdata.deepmd.dpspin_tf_comp.to_system_data(
+            file_name, spin_norm=np.array(kwargs["spin_norm"]), virtual_len=np.array(kwargs["virtual_len"]), type_map=type_map, labels=False
+        )
+
+    def to_system(self, data, file_name, set_size=5000, prec=np.float64, **kwargs):
+
+        dpdata.deepmd.dpspin_tf_comp.dump(file_name, data, spin_norm=np.array(kwargs["spin_norm"]), virtual_len=np.array(kwargs["virtual_len"]), set_size=set_size, comp_prec=prec)
+
+    def from_labeled_system(self, file_name, type_map=None, **kwargs):
+        return dpdata.deepmd.dpspin_tf_comp.to_system_data(
+            file_name, spin_norm=np.array(kwargs["spin_norm"]), virtual_len=np.array(kwargs["virtual_len"]), type_map=type_map, labels=True
         )
 
     MultiMode = Format.MultiModes.Directory

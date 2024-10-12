@@ -95,7 +95,7 @@ class System:
         DataType(
             "coords", np.ndarray, (Axis.NFRAMES, Axis.NATOMS, 3), deepmd_name="coord"
         ),
-        DataType("spins", np.ndarray, (Axis.NFRAMES, Axis.NATOMS, 3), required=False),
+        DataType("spins", np.ndarray, (Axis.NFRAMES, Axis.NATOMS, 3), required=False, deepmd_name="spin"),
         DataType(
             "real_atom_types", np.ndarray, (Axis.NFRAMES, Axis.NATOMS), required=False
         ),
@@ -1216,7 +1216,7 @@ class LabeledSystem(System):
             "forces", np.ndarray, (Axis.NFRAMES, Axis.NATOMS, 3), deepmd_name="force"
         ),
         DataType(
-            "mag_forces", np.ndarray, (Axis.NFRAMES, Axis.NATOMS, 3), required=False
+            "mag_forces", np.ndarray, (Axis.NFRAMES, Axis.NATOMS, 3), required=False, deepmd_name="force_mag"
         ),
         DataType(
             "virials",
